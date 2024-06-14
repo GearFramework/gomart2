@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/GearFramework/gomart/internal/pkg/alog"
+	"github.com/GearFramework/gomart2/internal/pkg/alog"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"

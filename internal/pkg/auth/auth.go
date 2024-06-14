@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"github.com/GearFramework/gomart/internal/gm/types"
-	"github.com/GearFramework/gomart/internal/pkg/alog"
+	"github.com/GearFramework/gomart2/internal/gm/types"
+	"github.com/GearFramework/gomart2/internal/pkg/alog"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/zap"

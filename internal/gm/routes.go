@@ -1,8 +1,8 @@
 package gm
 
 import (
-	"github.com/GearFramework/gomart/internal/gm/handlers"
-	"github.com/GearFramework/gomart/internal/gm/types"
+	"github.com/GearFramework/gomart2/internal/gm/handlers"
+	"github.com/GearFramework/gomart2/internal/gm/types"
 	"github.com/gin-gonic/gin"
 )
 

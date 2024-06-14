@@ -3,7 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
-	"github.com/GearFramework/gomart/internal/gm/types"
+	"github.com/GearFramework/gomart2/internal/gm/types"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"

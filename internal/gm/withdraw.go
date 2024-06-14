@@ -3,7 +3,7 @@ package gm
 import (
 	"context"
 	"fmt"
-	"github.com/GearFramework/gomart/internal/gm/types"
+	"github.com/GearFramework/gomart2/internal/gm/types"
 	"time"
 )
 

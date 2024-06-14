@@ -1,13 +1,13 @@
 package gm
 
 import (
-	"github.com/GearFramework/gomart/internal/gm/config"
-	"github.com/GearFramework/gomart/internal/pkg/accrual"
-	"github.com/GearFramework/gomart/internal/pkg/alog"
-	"github.com/GearFramework/gomart/internal/pkg/auth"
-	"github.com/GearFramework/gomart/internal/pkg/db"
-	"github.com/GearFramework/gomart/internal/server"
-	"github.com/GearFramework/gomart/internal/server/middleware"
+	"github.com/GearFramework/gomart2/internal/gm/config"
+	"github.com/GearFramework/gomart2/internal/pkg/accrual"
+	"github.com/GearFramework/gomart2/internal/pkg/alog"
+	"github.com/GearFramework/gomart2/internal/pkg/auth"
+	"github.com/GearFramework/gomart2/internal/pkg/db"
+	"github.com/GearFramework/gomart2/internal/server"
+	"github.com/GearFramework/gomart2/internal/server/middleware"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -15,7 +15,7 @@ import (
 type GopherMartApp struct {
 	Config  *config.GomartConfig
 	Storage *db.Storage
-	Server  *server.HttpServer
+	Server  *server.HTTPServer
 	Auth    *auth.Auth
 	Accrual *accrual.AccrualClient
 	logger  *zap.SugaredLogger

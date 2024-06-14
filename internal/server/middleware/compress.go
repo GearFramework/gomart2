@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/GearFramework/gomart/internal/pkg/compresser"
+	"github.com/GearFramework/gomart2/internal/pkg/compresser"
 	"github.com/gin-gonic/gin"
 )
 

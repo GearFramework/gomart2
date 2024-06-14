@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"github.com/GearFramework/gomart/internal/pkg/alog"
+	"github.com/GearFramework/gomart2/internal/pkg/alog"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"

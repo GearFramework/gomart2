@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"errors"
-	"github.com/GearFramework/gomart/internal/gm/types"
+	"github.com/GearFramework/gomart2/internal/gm/types"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"

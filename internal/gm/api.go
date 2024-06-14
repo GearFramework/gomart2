@@ -1,7 +1,7 @@
 package gm
 
 import (
-	"github.com/GearFramework/gomart/internal/gm/types"
+	"github.com/GearFramework/gomart2/internal/gm/types"
 	"strconv"
 	"time"
 )
