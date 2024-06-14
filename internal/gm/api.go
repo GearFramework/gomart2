@@ -10,6 +10,7 @@ import (
 )
 
 func (gm *GopherMartApp) RegisterCustomer(r types.CustomerRegisterRequest) (types.Response, error) {
+	gm.logger.Infof("API: register customer")
 	if err := validateRegisterRequest(r); err != nil {
 		gm.logger.Errorf("invalid form data: %s", err.Error())
 		return nil, err
@@ -37,6 +38,7 @@ func validateRegisterRequest(r types.CustomerRegisterRequest) error {
 }
 
 func (gm *GopherMartApp) LoginCustomer(r types.CustomerLoginRequest) (types.Response, error) {
+	gm.logger.Infof("API: login customer")
 	if err := validateLoginRequest(r); err != nil {
 		gm.logger.Errorf("invalid form data: %s", err.Error())
 		return nil, err
@@ -64,7 +66,7 @@ func validateLoginRequest(r types.CustomerLoginRequest) error {
 }
 
 func (gm *GopherMartApp) AddOrder(r types.AddOrderRequest) (types.Response, error) {
-	gm.logger.Infof("upload customer order")
+	gm.logger.Infof("API: upload customer order")
 	customerID, err := gm.Auth.AuthCustomer(r.GetCtx())
 	if err != nil {
 		return nil, err
@@ -76,7 +78,7 @@ func (gm *GopherMartApp) AddOrder(r types.AddOrderRequest) (types.Response, erro
 	}
 	gm.logger.Infof("uploading order number %s by customer %s(%d)", r.OrderNumber, customer.Login, customerID)
 	if !isValidOrderNumber(r.OrderNumber) {
-		gm.logger.Errorf("invalid form data: %s", types.ErrInvalidOrderNumber.Error())
+		gm.logger.Warnf("invalid form data: %s", types.ErrInvalidOrderNumber.Error())
 		return nil, types.ErrInvalidOrderNumber
 	}
 	if err = gm.CheckExistsOrder(r.GetCtx(), r.OrderNumber, customer); err != nil {
@@ -96,7 +98,7 @@ func (gm *GopherMartApp) AddOrder(r types.AddOrderRequest) (types.Response, erro
 	)
 
 	if errAcc := gm.calcAccrualForOrder(r, customer, order); errAcc != nil {
-		gm.logger.Error(errAcc.Error())
+		gm.logger.Warn(errAcc.Error())
 	}
 
 	return nil, err
@@ -126,7 +128,7 @@ func (gm *GopherMartApp) calcAccrualForOrder(r types.AddOrderRequest, customer *
 		}
 		return errors.New(fmt.Sprintf("error update customer balance: %s", err.Error()))
 	}
-	gm.logger.Infof("customer %s(%d) new balance balance: %f", customer.Login, customer.ID, newBalance)
+	gm.logger.Infof("customer %s(%d) new balance balance: %.02f", customer.Login, customer.ID, newBalance)
 	err = tx.Commit()
 	if err != nil {
 		gm.logger.Errorf("error committing withdraw: %s", err.Error())
@@ -156,7 +158,7 @@ func isValidOrderNumber(num string) bool {
 }
 
 func (gm *GopherMartApp) ListOrders(r types.APIRequest) (types.Response, error) {
-	gm.logger.Infof("load customer orders")
+	gm.logger.Infof("API: list customer orders")
 	customerID, err := gm.Auth.AuthCustomer(r.GetCtx())
 	if err != nil {
 		return nil, err
@@ -176,7 +178,7 @@ func (gm *GopherMartApp) ListOrders(r types.APIRequest) (types.Response, error) 
 }
 
 func (gm *GopherMartApp) GetBalance(r types.APIRequest) (types.Response, error) {
-	gm.logger.Infof("load customer balance")
+	gm.logger.Infof("API: get customer balance")
 	customerID, err := gm.Auth.AuthCustomer(r.GetCtx())
 	if err != nil {
 		return nil, err
@@ -191,7 +193,7 @@ func (gm *GopherMartApp) GetBalance(r types.APIRequest) (types.Response, error) 
 }
 
 func (gm *GopherMartApp) ListWithdrawals(r types.APIRequest) (types.Response, error) {
-	gm.logger.Infof("load customer withdrawls")
+	gm.logger.Infof("API: list customer withdrawls")
 	customerID, err := gm.Auth.AuthCustomer(r.GetCtx())
 	if err != nil {
 		return nil, err
@@ -211,7 +213,7 @@ func (gm *GopherMartApp) ListWithdrawals(r types.APIRequest) (types.Response, er
 }
 
 func (gm *GopherMartApp) Withdraw(r types.CustomerWithdrawRequest) (types.Response, error) {
-	gm.logger.Infof("withdraw customer")
+	gm.logger.Infof("API: withdraw customer")
 	customerID, err := gm.Auth.AuthCustomer(r.GetCtx())
 	if err != nil {
 		return nil, err
