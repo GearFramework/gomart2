@@ -53,8 +53,8 @@ type CustomerWithdrawRequest struct {
 }
 
 type CustomerBalanceResponse struct {
-	Balance  float32 `json:"balance"`
-	Withdraw float32 `json:"withdraw"`
+	Balance  float32 `json:"current"`
+	Withdraw float32 `json:"withdrawn"`
 }
 
 type APIFunc func(Requester) (Response, error)
