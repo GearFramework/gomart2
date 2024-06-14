@@ -109,25 +109,29 @@ func (gm *GopherMartApp) calcAccrualForOrder(r types.AddOrderRequest, customer *
 	gm.logger.Infof("calculate accrual order %s", r.OrderNumber)
 	w, err := gm.Accrual.Calc(r.GetCtx(), r.OrderNumber)
 	if err != nil {
-		return errors.New(fmt.Sprintf("accrual order %s has rejected by %s", r.OrderNumber, err.Error()))
+		msg := fmt.Sprintf("accrual order %s has rejected by %s", r.OrderNumber, err.Error())
+		return errors.New(msg)
 	}
 	gm.logger.Infof("Accrual order status %s and balance %.02f", w.Status, w.Accrual)
 	tx, err := gm.Storage.Begin(r.GetCtx())
 	if err != nil {
-		return errors.New(fmt.Sprintf("error begin transaction: %s", err.Error()))
+		msg := fmt.Sprintf("error begin transaction: %s", err.Error())
+		return errors.New(msg)
 	}
 	if err = gm.UpdateOrderStatusAccrual(r.GetCtx(), order, w.Status, w.Accrual); err != nil {
 		if errTx := tx.Rollback(); errTx != nil {
 			gm.logger.Errorf("error rolling back transaction: %s", errTx.Error())
 		}
-		return errors.New(fmt.Sprintf("invalid update status accural for order %s by: %s", r.OrderNumber, err.Error()))
+		msg := fmt.Sprintf("invalid update status accural for order %s by: %s", r.OrderNumber, err.Error())
+		return errors.New(msg)
 	}
 	newBalance, err := gm.UpdateCustomerBalance(r.GetCtx(), customer, w.Accrual)
 	if err != nil {
 		if errTx := tx.Rollback(); errTx != nil {
 			gm.logger.Errorf("error rolling back transaction: %s", errTx.Error())
 		}
-		return errors.New(fmt.Sprintf("error update customer balance: %s", err.Error()))
+		msg := fmt.Sprintf("error update customer balance: %s", err.Error())
+		return errors.New(msg)
 	}
 	gm.logger.Infof("customer %s(%d) new balance balance: %.02f", customer.Login, customer.ID, newBalance)
 	err = tx.Commit()
