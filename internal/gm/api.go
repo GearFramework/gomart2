@@ -64,22 +64,28 @@ func validateLoginRequest(r types.CustomerLoginRequest) error {
 }
 
 func (gm *GopherMartApp) AddOrder(r types.AddOrderRequest) (types.Response, error) {
+	gm.logger.Infof("upload customer order")
 	customerID, err := gm.Auth.AuthCustomer(r.GetCtx())
 	if err != nil {
 		return nil, err
 	}
-	gm.logger.Infof("uploading order number %s by customer %d", r.OrderNumber, customerID)
 	customer, err := gm.GetCustomerByID(r.GetCtx(), customerID)
 	if err != nil {
 		gm.logger.Errorf("invalid customer: %d", customerID)
 		return nil, err
 	}
+	gm.logger.Infof("uploading order number %s by customer %s(%d)", r.OrderNumber, customer.Login, customerID)
 	if !isValidOrderNumber(r.OrderNumber) {
 		gm.logger.Errorf("invalid form data: %s", types.ErrInvalidOrderNumber.Error())
 		return nil, types.ErrInvalidOrderNumber
 	}
 	if err = gm.CheckExistsOrder(r.GetCtx(), r.OrderNumber, customer); err != nil {
-		gm.logger.Warnf("upload order %s canceled by: %s", r.OrderNumber, err.Error())
+		gm.logger.Warnf("upload order %s for customer %s(%d) canceled by: %s",
+			r.OrderNumber,
+			customer.Login,
+			customerID,
+			err.Error(),
+		)
 		return nil, err
 	}
 	order := gm.NewOrder(r.OrderNumber, customer.ID, accrual.StatusNew, 0, time.Now())
@@ -120,7 +126,7 @@ func (gm *GopherMartApp) calcAccrualForOrder(r types.AddOrderRequest, customer *
 		}
 		return errors.New(fmt.Sprintf("error update customer balance: %s", err.Error()))
 	}
-	gm.logger.Infof("New customer balance: %f", newBalance)
+	gm.logger.Infof("customer %s(%d) new balance balance: %f", customer.Login, customer.ID, newBalance)
 	err = tx.Commit()
 	if err != nil {
 		gm.logger.Errorf("error committing withdraw: %s", err.Error())
@@ -155,12 +161,17 @@ func (gm *GopherMartApp) ListOrders(r types.APIRequest) (types.Response, error) 
 	if err != nil {
 		return nil, err
 	}
+	customer, err := gm.GetCustomerByID(r.GetCtx(), customerID)
+	if err != nil {
+		gm.logger.Warnf("error get customer %d: %s", customerID, err.Error())
+		return 0, err
+	}
 	orders, err := gm.GetCustomerOrders(r.GetCtx(), customerID)
 	if err != nil {
 		gm.logger.Warnf("error get orders for customer %d: %s", customerID, err.Error())
 		return nil, err
 	}
-	gm.logger.Infof("found %d order for customer %d", len(orders), customerID)
+	gm.logger.Infof("found %d order for customer %s(%d)", len(orders), customer.Login, customerID)
 	return orders, nil
 }
 
@@ -175,7 +186,7 @@ func (gm *GopherMartApp) GetBalance(r types.APIRequest) (types.Response, error) 
 		gm.logger.Warnf("error get customer %d: %s", customerID, err.Error())
 		return 0, err
 	}
-	gm.logger.Infof("customer %d balance %d", customerID, customer.Balance)
+	gm.logger.Infof("customer %s(%d) balance %.02f", customer.Login, customerID, customer.Balance)
 	return &types.CustomerBalanceResponse{Balance: customer.Balance, Withdraw: customer.Withdraw}, nil
 }
 
@@ -185,12 +196,17 @@ func (gm *GopherMartApp) ListWithdrawals(r types.APIRequest) (types.Response, er
 	if err != nil {
 		return nil, err
 	}
+	customer, err := gm.GetCustomerByID(r.GetCtx(), customerID)
+	if err != nil {
+		gm.logger.Warnf("error get customer %d: %s", customerID, err.Error())
+		return 0, err
+	}
 	orders, err := gm.GetCustomerWithdrawals(r.GetCtx(), customerID)
 	if err != nil {
 		gm.logger.Warnf("error get withdrawals for customer %d: %s", customerID, err.Error())
 		return nil, err
 	}
-	gm.logger.Infof("found %d withdrawals for customer %d", len(orders), customerID)
+	gm.logger.Infof("found %d withdrawals for customer %s(%d)", len(orders), customer.Login, customerID)
 	return orders, nil
 }
 
@@ -206,14 +222,19 @@ func (gm *GopherMartApp) Withdraw(r types.CustomerWithdrawRequest) (types.Respon
 		return 0, err
 	}
 	if customer.Balance < r.Sum {
-		gm.logger.Warnf("error customer points %.02f but requested %.02f", customer.Withdraw, r.Sum)
+		gm.logger.Warnf("error customer %s(%d) points %.02f but requested %.02f",
+			customerID,
+			customer.Login,
+			customer.Withdraw,
+			r.Sum,
+		)
 		return nil, types.ErrNotEnoughPoints
 	}
 	if !isValidOrderNumber(r.Order) {
 		gm.logger.Warnf("invalid requested order %s", r.Order)
 		return nil, types.ErrInvalidOrderNumber
 	}
-	gm.logger.Infof("withdraw for customer %d by order %s on sum %.02f", customerID, r.Order, r.Sum)
+	gm.logger.Infof("withdraw for customer %s(%d) by order %s on sum %.02f", customer.Login, customerID, r.Order, r.Sum)
 	err = gm.AppendWithdraw(r.GetCtx(), gm.NewWithdraw(r.Order, customerID, r.Sum, time.Now()))
 	return nil, err
 }

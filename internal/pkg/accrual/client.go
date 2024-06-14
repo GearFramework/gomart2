@@ -63,7 +63,7 @@ func (acc *AccrualClient) Calc(ctx context.Context, number string) (*ResponseOrd
 		return nil, err
 	}
 	if err = checkCalcResponse(w); err != nil {
-		acc.logger.Error(err.Error())
+		acc.logger.Warn("accrual client has error: " + err.Error())
 		return nil, err
 	}
 	defer w.Body.Close()
