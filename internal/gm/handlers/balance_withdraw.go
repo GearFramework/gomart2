@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/GearFramework/gomart2/internal/gm/types"
 	"github.com/gin-gonic/gin"
@@ -27,21 +26,7 @@ func Withdraw(ctx *gin.Context, api types.APIFunc) {
 	}
 	_, err := api(data)
 	if err != nil {
-		if errors.Is(err, types.ErrInvalidAuthorization) ||
-			errors.Is(err, types.ErrCustomerNotFound) ||
-			errors.Is(err, types.ErrNeedAuthorization) {
-			ctx.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-		if errors.Is(err, types.ErrNotEnoughPoints) {
-			ctx.AbortWithStatus(http.StatusPaymentRequired)
-			return
-		}
-		if errors.Is(err, types.ErrOrderAlreadyExists) || errors.Is(err, types.ErrInvalidOrderNumber) {
-			ctx.AbortWithStatus(http.StatusUnprocessableEntity)
-		}
-		fmt.Println("internal error;", err.Error())
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		responseErrors(ctx, err)
 		return
 	}
 	ctx.Status(http.StatusOK)

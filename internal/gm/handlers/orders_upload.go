@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"github.com/GearFramework/gomart2/internal/gm/types"
 	"github.com/gin-gonic/gin"
 	"io"
@@ -26,19 +25,8 @@ func AddOrder(ctx *gin.Context, api types.APIFunc) {
 	}
 	_, err = api(data)
 	if err != nil {
-		if errors.Is(err, types.ErrInvalidOrderNumber) {
-			ctx.AbortWithStatus(http.StatusUnprocessableEntity)
-			return
-		} else if errors.Is(err, types.ErrOrderAlreadyExists) {
-			ctx.AbortWithStatus(http.StatusOK)
-			return
-		} else if errors.Is(err, types.ErrOrderAnotherCustomer) {
-			ctx.AbortWithStatus(http.StatusConflict)
-			return
-		} else {
-			ctx.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
+		responseErrors(ctx, err)
+		return
 	}
 	ctx.Status(http.StatusAccepted)
 }

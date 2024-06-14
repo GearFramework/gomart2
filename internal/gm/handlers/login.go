@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/GearFramework/gomart2/internal/gm/types"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -24,17 +23,8 @@ func LoginCustomer(ctx *gin.Context, api types.APIFunc) {
 	}
 	_, err := api(data)
 	if err != nil {
-		if errors.Is(err, types.ErrRegisterParamsRequest) {
-			ctx.AbortWithStatus(http.StatusBadRequest)
-			return
-		} else if errors.Is(err, types.ErrCustomerNotFound) {
-			ctx.AbortWithStatus(http.StatusUnauthorized)
-		} else if errors.Is(err, types.ErrCustomerLogin) {
-			ctx.AbortWithStatus(http.StatusUnauthorized)
-		} else {
-			ctx.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
+		responseErrors(ctx, err)
+		return
 	}
 	ctx.Status(http.StatusOK)
 }
