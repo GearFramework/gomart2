@@ -96,7 +96,7 @@ func (gm *GopherMartApp) CheckExistsOrder(ctx context.Context, number string, cu
 		fmt.Println(err.Error())
 		return nil
 	}
-	if customer.Id != order.CustomerID {
+	if customer.ID != order.CustomerID {
 		return types.ErrOrderAnotherCustomer
 	}
 	return types.ErrOrderAlreadyExists

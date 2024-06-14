@@ -43,7 +43,7 @@ func (gm *GopherMartApp) LoginCustomer(r types.CustomerLoginRequest) (types.Resp
 		gm.logger.Errorf("error login customer: %s", err.Error())
 		return nil, err
 	}
-	token, err := gm.Auth.CreateToken(customer.Id)
+	token, err := gm.Auth.CreateToken(customer.ID)
 	if err != nil {
 		gm.logger.Errorf("error token: %s", err.Error())
 		return nil, err
@@ -93,7 +93,7 @@ func (gm *GopherMartApp) AddOrder(r types.AddOrderRequest) (types.Response, erro
 	err = gm.AppendNewOrder(
 		r.GetCtx(),
 		customer,
-		gm.NewOrder(r.OrderNumber, customer.Id, string(w.Status), accrual, time.Now()),
+		gm.NewOrder(r.OrderNumber, customer.ID, string(w.Status), accrual, time.Now()),
 		accrual,
 	)
 	return nil, err

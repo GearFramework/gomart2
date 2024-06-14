@@ -40,7 +40,7 @@ var (
 )
 
 type Customer struct {
-	Id       int64   `db:"id" json:"id"`
+	ID       int64   `db:"id" json:"id"`
 	Login    string  `db:"login" json:"login"`
 	Password string  `db:"password" json:"-"`
 	Balance  float32 `db:"balance" json:"balance"`
@@ -102,7 +102,7 @@ func (gm *GopherMartApp) GetCustomerByID(ctx context.Context, customerID int64) 
 }
 
 func (gm *GopherMartApp) UpdateCustomerBalance(ctx context.Context, customer *Customer, appendBalance float32) (float32, error) {
-	if err := gm.Storage.Update(ctx, sqlUpdateCustomerBalance, customer.Id, appendBalance); err != nil {
+	if err := gm.Storage.Update(ctx, sqlUpdateCustomerBalance, customer.ID, appendBalance); err != nil {
 		return customer.Balance, err
 	}
 	fmt.Println(customer.Balance)
