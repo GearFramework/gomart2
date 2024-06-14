@@ -81,13 +81,10 @@ func (gm *GopherMartApp) UpdateCustomerWithdraw(ctx context.Context, withdraw *t
 
 func (gm *GopherMartApp) GetCustomerWithdrawals(ctx context.Context, customerID int64) ([]types.Withdraw, error) {
 	rows, err := gm.Storage.Find(ctx, sqlGetCustomerWithdrawals, customerID)
-	defer func() {
-		err := rows.Close()
-		gm.logger.Error(err.Error())
-	}()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	var withdrawals []types.Withdraw
 	var number string
 	var sum float32

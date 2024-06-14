@@ -104,13 +104,10 @@ func (gm *GopherMartApp) CheckExistsOrder(ctx context.Context, number string, cu
 
 func (gm *GopherMartApp) GetCustomerOrders(ctx context.Context, customerID int64) ([]types.Order, error) {
 	rows, err := gm.Storage.Find(ctx, sqlGetCustomerOrders, customerID)
-	defer func() {
-		err := rows.Close()
-		gm.logger.Error(err.Error())
-	}()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	var orders []types.Order
 	var number string
 	var uploadedAt time.Time
