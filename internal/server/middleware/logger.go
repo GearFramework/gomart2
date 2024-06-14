@@ -12,7 +12,7 @@ func Logger() gin.HandlerFunc {
 		start := time.Now()
 		ctx.Next()
 		duration := getDurationInMilliseconds(start)
-		logger.Infof("%s request: %s; status: %d; size: %d\t\t| duration: %.4f ms",
+		logger.Infof("%s request: %s; status: %d; size: %d | duration: %.4f ms",
 			ctx.Request.Method,
 			ctx.Request.RequestURI,
 			ctx.Writer.Status(),

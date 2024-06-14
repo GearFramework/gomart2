@@ -2,7 +2,6 @@ package gm
 
 import (
 	"context"
-	"fmt"
 	"github.com/GearFramework/gomart2/internal/gm/types"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -105,7 +104,6 @@ func (gm *GopherMartApp) UpdateCustomerBalance(ctx context.Context, customer *Cu
 	if err := gm.Storage.Update(ctx, sqlUpdateCustomerBalance, customer.ID, appendBalance); err != nil {
 		return customer.Balance, err
 	}
-	fmt.Println(customer.Balance)
 	customer.Balance += appendBalance
 	return customer.Balance, nil
 }

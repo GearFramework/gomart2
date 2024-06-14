@@ -65,6 +65,7 @@ func (gm *GopherMartApp) AddOrder(r types.AddOrderRequest) (types.Response, erro
 	if err != nil {
 		return nil, err
 	}
+	gm.logger.Infof("uploading order number %s by customer %d", r.OrderNumber, customerID)
 	customer, err := gm.GetCustomerByID(r.GetCtx(), customerID)
 	if err != nil {
 		gm.logger.Errorf("invalid customer: %d", customerID)
@@ -74,15 +75,14 @@ func (gm *GopherMartApp) AddOrder(r types.AddOrderRequest) (types.Response, erro
 		gm.logger.Errorf("invalid form data: %s", types.ErrInvalidOrderNumber.Error())
 		return nil, types.ErrInvalidOrderNumber
 	}
-	_, err = gm.GetOrder(r.GetCtx(), r.OrderNumber)
-	if err == nil {
-		gm.logger.Errorf("order %s already exists", r.OrderNumber)
-		return nil, types.ErrOrderAlreadyExists
+	if err = gm.CheckExistsOrder(r.GetCtx(), r.OrderNumber, customer); err != nil {
+		gm.logger.Warnf("upload order %s has canceled by %s", r.OrderNumber, err.Error())
+		return nil, err
 	}
 	gm.logger.Infof("Calculate accrual order %s", r.OrderNumber)
 	w, err := gm.Accrual.Calc(r.GetCtx(), r.OrderNumber)
 	if err != nil {
-		gm.logger.Errorf(err.Error())
+		gm.logger.Warnf("accrual order %s has rejected by %s", r.OrderNumber, err.Error())
 		return nil, err
 	}
 	gm.logger.Infof("Accrual order status %s", w.Status)

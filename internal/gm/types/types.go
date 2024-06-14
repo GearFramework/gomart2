@@ -16,7 +16,7 @@ var (
 	ErrCustomerLogin           = errors.New("customer invalid login")
 	ErrInvalidOrderNumber      = errors.New("invalid order number")
 	ErrOrderAlreadyExists      = errors.New("order number already exists")
-	ErrOrderAnotherCustomer    = errors.New("order number used by another customer")
+	ErrOrderAnotherCustomer    = errors.New("order number already uploaded another customer")
 	ErrNotEnoughPoints         = errors.New("not enough points")
 )
 

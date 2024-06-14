@@ -91,8 +91,8 @@ func (gm *GopherMartApp) GetOrder(ctx context.Context, number string) (*types.Or
 }
 
 func (gm *GopherMartApp) CheckExistsOrder(ctx context.Context, number string, customer *Customer) error {
-	var order types.Order
-	if err := gm.Storage.Get(ctx, &order, sqlGetOrderByID, number); err != nil {
+	order, err := gm.GetOrder(ctx, number)
+	if err != nil {
 		fmt.Println(err.Error())
 		return nil
 	}

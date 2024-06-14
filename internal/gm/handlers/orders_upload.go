@@ -29,10 +29,16 @@ func AddOrder(ctx *gin.Context, api types.APIFunc) {
 		if errors.Is(err, types.ErrInvalidOrderNumber) {
 			ctx.AbortWithStatus(http.StatusUnprocessableEntity)
 			return
+		} else if errors.Is(err, types.ErrOrderAlreadyExists) {
+			ctx.AbortWithStatus(http.StatusOK)
+			return
+		} else if errors.Is(err, types.ErrOrderAnotherCustomer) {
+			ctx.AbortWithStatus(http.StatusConflict)
+			return
 		} else {
 			ctx.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 	}
-	ctx.Status(http.StatusOK)
+	ctx.Status(http.StatusAccepted)
 }
