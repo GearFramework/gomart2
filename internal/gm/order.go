@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/GearFramework/gomart2/internal/gm/types"
+	"github.com/GearFramework/gomart2/internal/pkg/accrual"
 	"time"
 )
 
@@ -29,9 +30,15 @@ var (
 		 WHERE customer_id = $1
 		 ORDER BY uploaded_at DESC
 	`
+	sqlUpdateOrderStatusAccrual = `
+		UPDATE gomartspace.orders
+		   SET status = $2,
+		       accrual = $3
+		 WHERE number = $1
+	`
 )
 
-func (gm *GopherMartApp) NewOrder(number string, customerID int64, status string, accrual float32, uploadedAt time.Time) *types.Order {
+func (gm *GopherMartApp) NewOrder(number string, customerID int64, status accrual.StatusAccrual, accrual float32, uploadedAt time.Time) *types.Order {
 	loc, err := time.LoadLocation("Europe/Moscow")
 	if err != nil {
 		gm.logger.Error(err)
@@ -45,33 +52,13 @@ func (gm *GopherMartApp) NewOrder(number string, customerID int64, status string
 	}
 }
 
-func (gm *GopherMartApp) AppendNewOrder(ctx context.Context, customer *Customer, order *types.Order, accrual float32) error {
-	tx, err := gm.Storage.Begin(ctx)
-	if err != nil {
-		return err
-	}
+func (gm *GopherMartApp) AppendNewOrder(ctx context.Context, customer *Customer, order *types.Order) error {
 	gm.logger.Infof("store new order %s", order.Number)
-	if err = gm.InsertOrder(ctx, order); err != nil {
+	if err := gm.InsertOrder(ctx, order); err != nil {
 		gm.logger.Errorf("error inserting order: %s", err.Error())
-		if errTx := tx.Rollback(); errTx != nil {
-			gm.logger.Errorf("error rolling back transaction: %s", errTx.Error())
-		}
 		return err
 	}
-	newBalance, err := gm.UpdateCustomerBalance(ctx, customer, accrual)
-	if err != nil {
-		gm.logger.Errorf("error update customer balance: %s", err.Error())
-		if errTx := tx.Rollback(); errTx != nil {
-			gm.logger.Errorf("error rolling back transaction: %s", errTx.Error())
-		}
-		return err
-	}
-	gm.logger.Infof("New customer balance: %f", newBalance)
-	err = tx.Commit()
-	if err != nil {
-		gm.logger.Errorf("error committing withdraw: %s", err.Error())
-	}
-	return err
+	return nil
 }
 
 func (gm *GopherMartApp) InsertOrder(ctx context.Context, order *types.Order) error {
@@ -79,6 +66,15 @@ func (gm *GopherMartApp) InsertOrder(ctx context.Context, order *types.Order) er
 		return err
 	}
 	return nil
+}
+
+func (gm *GopherMartApp) UpdateOrderStatusAccrual(
+	ctx context.Context,
+	order *types.Order,
+	status accrual.StatusAccrual,
+	accrual float32,
+) error {
+	return gm.Storage.Update(ctx, sqlUpdateOrderStatusAccrual, order.Number, status, accrual)
 }
 
 func (gm *GopherMartApp) GetOrder(ctx context.Context, number string) (*types.Order, error) {
@@ -111,10 +107,10 @@ func (gm *GopherMartApp) GetCustomerOrders(ctx context.Context, customerID int64
 	var orders []types.Order
 	var number string
 	var uploadedAt time.Time
-	var status string
-	var accrual float32
+	var status accrual.StatusAccrual
+	var balance float32
 	for rows.Next() {
-		err := rows.Scan(&number, &uploadedAt, &status, &accrual)
+		err := rows.Scan(&number, &uploadedAt, &status, &balance)
 		if err != nil {
 			fmt.Println(err.Error())
 			break
@@ -123,7 +119,7 @@ func (gm *GopherMartApp) GetCustomerOrders(ctx context.Context, customerID int64
 			number,
 			customerID,
 			status,
-			accrual,
+			balance,
 			uploadedAt,
 		))
 	}

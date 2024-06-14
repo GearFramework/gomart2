@@ -12,12 +12,12 @@ import (
 )
 
 const (
-	timeout          = time.Duration(3) * time.Second
-	StatusNew        = "NEW"
-	StatusRegistered = "REGISTERED"
-	StatusInvalid    = "INVALID"
-	StatusProcessing = "PROCESSING"
-	StatusProcessed  = "PROCESSED"
+	timeout                        = time.Duration(3) * time.Second
+	StatusNew        StatusAccrual = "NEW"
+	StatusRegistered StatusAccrual = "REGISTERED"
+	StatusInvalid    StatusAccrual = "INVALID"
+	StatusProcessing StatusAccrual = "PROCESSING"
+	StatusProcessed  StatusAccrual = "PROCESSED"
 )
 
 var (
@@ -59,14 +59,17 @@ func (acc *AccrualClient) Calc(ctx context.Context, number string) (*ResponseOrd
 	client := http.Client{}
 	w, err := client.Do(r)
 	if err != nil {
+		acc.logger.Error(err.Error())
 		return nil, err
 	}
 	if err = checkCalcResponse(w); err != nil {
+		acc.logger.Error(err.Error())
 		return nil, err
 	}
 	defer w.Body.Close()
 	data := ResponseOrders{}
 	if err := json.NewDecoder(w.Body).Decode(&data); err != nil {
+		acc.logger.Error(err.Error())
 		return nil, err
 	}
 	return &data, nil

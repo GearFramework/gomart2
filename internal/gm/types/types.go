@@ -2,6 +2,7 @@ package types
 
 import (
 	"errors"
+	"github.com/GearFramework/gomart2/internal/pkg/accrual"
 	"github.com/gin-gonic/gin"
 )
 
@@ -67,11 +68,11 @@ func (r APIRequest) GetCtx() *gin.Context {
 }
 
 type Order struct {
-	Number     string  `db:"number" json:"number"`
-	CustomerID int64   `db:"customer_id" json:"-"`
-	Status     string  `db:"status" json:"status"`
-	Accrual    float32 `db:"accrual" json:"accrual"`
-	UploadedAt string  `db:"uploaded_at" json:"uploaded_at"`
+	Number     string                `db:"number" json:"number"`
+	CustomerID int64                 `db:"customer_id" json:"-"`
+	Status     accrual.StatusAccrual `db:"status" json:"status"`
+	Accrual    float32               `db:"accrual" json:"accrual"`
+	UploadedAt string                `db:"uploaded_at" json:"uploaded_at"`
 }
 
 type Withdraw struct {
