@@ -66,9 +66,10 @@ func validateLoginRequest(r types.CustomerLoginRequest) error {
 }
 
 func (gm *GopherMartApp) AddOrder(r types.AddOrderRequest) (types.Response, error) {
-	gm.logger.Infof("API: upload customer order")
+	gm.logger.Infof("API: upload customer order %s", r.OrderNumber)
 	customerID, err := gm.Auth.AuthCustomer(r.GetCtx())
 	if err != nil {
+		gm.logger.Errorf("invalid customer: %d", customerID)
 		return nil, err
 	}
 	customer, err := gm.GetCustomerByID(r.GetCtx(), customerID)
@@ -213,7 +214,7 @@ func (gm *GopherMartApp) ListWithdrawals(r types.APIRequest) (types.Response, er
 }
 
 func (gm *GopherMartApp) Withdraw(r types.CustomerWithdrawRequest) (types.Response, error) {
-	gm.logger.Infof("API: withdraw customer")
+	gm.logger.Infof("API: withdraw customer; order %s; sum %.02f", r.Order, r.Sum)
 	customerID, err := gm.Auth.AuthCustomer(r.GetCtx())
 	if err != nil {
 		return nil, err
