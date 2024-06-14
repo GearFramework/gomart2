@@ -10,9 +10,13 @@ func Logger() gin.HandlerFunc {
 	logger := alog.NewLogger("info")
 	return func(ctx *gin.Context) {
 		start := time.Now()
+		logger.Infof("%s request: %s",
+			ctx.Request.Method,
+			ctx.Request.RequestURI,
+		)
 		ctx.Next()
 		duration := getDurationInMilliseconds(start)
-		logger.Infof("%s request: %s; status: %d; size: %d | duration: %.4f ms",
+		logger.Infof("%s response from: %s; status: %d; size: %d | duration: %.4f ms",
 			ctx.Request.Method,
 			ctx.Request.RequestURI,
 			ctx.Writer.Status(),

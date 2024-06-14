@@ -89,7 +89,6 @@ func (gm *GopherMartApp) GetOrder(ctx context.Context, number string) (*types.Or
 func (gm *GopherMartApp) CheckExistsOrder(ctx context.Context, number string, customer *Customer) error {
 	order, err := gm.GetOrder(ctx, number)
 	if err != nil {
-		fmt.Println(err.Error())
 		return nil
 	}
 	if customer.ID != order.CustomerID {
