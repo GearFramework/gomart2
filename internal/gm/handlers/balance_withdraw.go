@@ -10,7 +10,6 @@ import (
 )
 
 func Withdraw(ctx *gin.Context, api types.APIFunc) {
-	defer ctx.Request.Body.Close()
 	if !strings.Contains(ctx.Request.Header.Get("Content-Type"), "application/json") {
 		fmt.Println("invalid request type")
 		ctx.Status(http.StatusBadRequest)
@@ -24,6 +23,7 @@ func Withdraw(ctx *gin.Context, api types.APIFunc) {
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+	defer ctx.Request.Body.Close()
 	_, err := api(data)
 	if err != nil {
 		responseErrors(ctx, err)

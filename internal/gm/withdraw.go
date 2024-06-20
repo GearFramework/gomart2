@@ -2,7 +2,6 @@ package gm
 
 import (
 	"context"
-	"fmt"
 	"github.com/GearFramework/gomart2/internal/gm/types"
 	"time"
 )
@@ -47,18 +46,19 @@ func (gm *GopherMartApp) AppendWithdraw(ctx context.Context, withdraw *types.Wit
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if err != nil {
+			if errTx := tx.Rollback(); errTx != nil {
+				gm.logger.Errorf("error rolling back transaction: %s", errTx.Error())
+			}
+		}
+	}()
 	if err = gm.InsertWithdraw(ctx, withdraw); err != nil {
 		gm.logger.Errorf("inserted withdraw with error: %s", err.Error())
-		if errTx := tx.Rollback(); errTx != nil {
-			gm.logger.Errorf("error rolling back transaction: %s", errTx.Error())
-		}
 		return types.ErrOrderAlreadyExists
 	}
 	if err := gm.UpdateCustomerWithdraw(ctx, withdraw); err != nil {
 		gm.logger.Errorf("error updating withdraw: %s", err.Error())
-		if errTx := tx.Rollback(); errTx != nil {
-			gm.logger.Errorf("error rolling back transaction: %s", errTx.Error())
-		}
 		return err
 	}
 	err = tx.Commit()
@@ -92,8 +92,8 @@ func (gm *GopherMartApp) GetCustomerWithdrawals(ctx context.Context, customerID 
 	for rows.Next() {
 		err := rows.Scan(&number, &sum, &processedAt)
 		if err != nil {
-			fmt.Println(err.Error())
-			break
+			gm.logger.Error(err.Error())
+			return nil, err
 		}
 		withdrawals = append(withdrawals, *gm.NewWithdraw(
 			number,
@@ -101,9 +101,6 @@ func (gm *GopherMartApp) GetCustomerWithdrawals(ctx context.Context, customerID 
 			sum,
 			processedAt,
 		))
-	}
-	if err = rows.Err(); err != nil {
-		gm.logger.Warn(err.Error())
 	}
 	gm.logger.Infof("found %d withdrawals; customer %d", len(withdrawals), customerID)
 	return withdrawals, nil

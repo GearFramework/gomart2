@@ -21,6 +21,7 @@ var (
 		       withdraw
 		  FROM gomartspace.customers
 		 WHERE login = $1
+		   FOR UPDATE
 	`
 	sqlGetCustomerByID = `
 		SELECT id,
@@ -30,6 +31,7 @@ var (
 		       withdraw
 		  FROM gomartspace.customers
 		 WHERE id = $1
+		   FOR UPDATE 
 	`
 	sqlUpdateCustomerBalance = `
 		UPDATE gomartspace.customers

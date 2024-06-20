@@ -2,7 +2,6 @@ package gm
 
 import (
 	"context"
-	"fmt"
 	"github.com/GearFramework/gomart2/internal/gm/types"
 	"github.com/GearFramework/gomart2/internal/pkg/accrual"
 	"time"
@@ -111,8 +110,8 @@ func (gm *GopherMartApp) GetCustomerOrders(ctx context.Context, customerID int64
 	for rows.Next() {
 		err := rows.Scan(&number, &uploadedAt, &status, &balance)
 		if err != nil {
-			fmt.Println(err.Error())
-			break
+			gm.logger.Error(err.Error())
+			return nil, err
 		}
 		orders = append(orders, *gm.NewOrder(
 			number,
@@ -121,9 +120,6 @@ func (gm *GopherMartApp) GetCustomerOrders(ctx context.Context, customerID int64
 			balance,
 			uploadedAt,
 		))
-	}
-	if err = rows.Err(); err != nil {
-		gm.logger.Warn(err.Error())
 	}
 	gm.logger.Infof("found %d orders; customer %d", len(orders), customerID)
 	return orders, nil

@@ -118,18 +118,19 @@ func (gm *GopherMartApp) calcAccrualForOrder(r types.AddOrderRequest, customer *
 		msg := fmt.Sprintf("error begin transaction: %s", err.Error())
 		return errors.New(msg)
 	}
-	if err = gm.UpdateOrderStatusAccrual(r.GetCtx(), order, w.Status, w.Accrual); err != nil {
-		if errTx := tx.Rollback(); errTx != nil {
-			gm.logger.Errorf("error rolling back transaction: %s", errTx.Error())
+	defer func() {
+		if err != nil {
+			if errTx := tx.Rollback(); errTx != nil {
+				gm.logger.Errorf("error rolling back transaction: %s", errTx.Error())
+			}
 		}
+	}()
+	if err = gm.UpdateOrderStatusAccrual(r.GetCtx(), order, w.Status, w.Accrual); err != nil {
 		msg := fmt.Sprintf("invalid update status accural for order %s by: %s", r.OrderNumber, err.Error())
 		return errors.New(msg)
 	}
 	newBalance, err := gm.UpdateCustomerBalance(r.GetCtx(), customer, w.Accrual)
 	if err != nil {
-		if errTx := tx.Rollback(); errTx != nil {
-			gm.logger.Errorf("error rolling back transaction: %s", errTx.Error())
-		}
 		msg := fmt.Sprintf("error update customer balance: %s", err.Error())
 		return errors.New(msg)
 	}
