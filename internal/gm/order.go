@@ -121,6 +121,10 @@ func (gm *GopherMartApp) GetCustomerOrders(ctx context.Context, customerID int64
 			uploadedAt,
 		))
 	}
+	if err = rows.Err(); err != nil {
+		gm.logger.Error(err.Error())
+		return nil, err
+	}
 	gm.logger.Infof("found %d orders; customer %d", len(orders), customerID)
 	return orders, nil
 }

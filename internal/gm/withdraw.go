@@ -102,6 +102,10 @@ func (gm *GopherMartApp) GetCustomerWithdrawals(ctx context.Context, customerID 
 			processedAt,
 		))
 	}
+	if err = rows.Err(); err != nil {
+		gm.logger.Error(err.Error())
+		return nil, err
+	}
 	gm.logger.Infof("found %d withdrawals; customer %d", len(withdrawals), customerID)
 	return withdrawals, nil
 }
