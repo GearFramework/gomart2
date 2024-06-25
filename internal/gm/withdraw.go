@@ -76,7 +76,8 @@ func (gm *GopherMartApp) InsertWithdraw(ctx context.Context, withdraw *types.Wit
 }
 
 func (gm *GopherMartApp) UpdateCustomerWithdraw(ctx context.Context, withdraw *types.Withdraw) error {
-	return gm.Storage.Update(ctx, sqlUpdateCustomerWithdraw, withdraw.Sum, withdraw.CustomerID)
+	_, err := gm.Storage.Update(ctx, sqlUpdateCustomerWithdraw, withdraw.Sum, withdraw.CustomerID)
+	return err
 }
 
 func (gm *GopherMartApp) GetCustomerWithdrawals(ctx context.Context, customerID int64) ([]types.Withdraw, error) {

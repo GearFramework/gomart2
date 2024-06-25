@@ -37,6 +37,7 @@ var (
 		UPDATE gomartspace.customers
 		   SET balance = balance + $2
 		 WHERE id = $1
+	 RETURNING balance 
 	`
 )
 
@@ -102,10 +103,18 @@ func (gm *GopherMartApp) GetCustomerByID(ctx context.Context, customerID int64) 
 	return &customer, err
 }
 
-func (gm *GopherMartApp) UpdateCustomerBalance(ctx context.Context, customer *Customer, appendBalance float32) (float32, error) {
-	if err := gm.Storage.Update(ctx, sqlUpdateCustomerBalance, customer.ID, appendBalance); err != nil {
-		return customer.Balance, err
+func (gm *GopherMartApp) UpdateCustomerBalance(ctx context.Context, customerID int64, appendBalance float32) (float32, error) {
+
+	row, err := gm.Storage.Update(ctx, sqlUpdateCustomerBalance, customerID, appendBalance)
+	if err != nil {
+		gm.logger.Warn(err.Error())
+		return 0, err
 	}
-	customer.Balance += appendBalance
-	return customer.Balance, nil
+	var newBalance float32
+	err = row.Scan(&newBalance)
+	if err != nil {
+		gm.logger.Warn(err.Error())
+		return 0, err
+	}
+	return newBalance, nil
 }

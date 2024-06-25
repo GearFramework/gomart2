@@ -69,11 +69,12 @@ func (gm *GopherMartApp) InsertOrder(ctx context.Context, order *types.Order) er
 
 func (gm *GopherMartApp) UpdateOrderStatusAccrual(
 	ctx context.Context,
-	order *types.Order,
+	order types.Order,
 	status accrual.StatusAccrual,
 	accrual float32,
 ) error {
-	return gm.Storage.Update(ctx, sqlUpdateOrderStatusAccrual, order.Number, status, accrual)
+	_, err := gm.Storage.Update(ctx, sqlUpdateOrderStatusAccrual, order.Number, status, accrual)
+	return err
 }
 
 func (gm *GopherMartApp) GetOrder(ctx context.Context, number string) (*types.Order, error) {

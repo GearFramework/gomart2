@@ -19,9 +19,9 @@ func (s *Storage) Insert(ctx context.Context, query string, args ...any) (*sql.R
 	return row, row.Err()
 }
 
-func (s *Storage) Update(ctx context.Context, query string, args ...any) error {
-	_, err := s.conn.DB.ExecContext(ctx, query, args...)
-	return err
+func (s *Storage) Update(ctx context.Context, query string, args ...any) (*sql.Row, error) {
+	row := s.conn.DB.QueryRowContext(ctx, query, args...)
+	return row, row.Err()
 }
 
 func (s *Storage) Find(ctx context.Context, query string, args ...any) (*sql.Rows, error) {

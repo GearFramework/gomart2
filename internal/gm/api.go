@@ -1,8 +1,6 @@
 package gm
 
 import (
-	"errors"
-	"fmt"
 	"github.com/GearFramework/gomart2/internal/gm/types"
 	"github.com/GearFramework/gomart2/internal/pkg/accrual"
 	"strconv"
@@ -92,54 +90,9 @@ func (gm *GopherMartApp) AddOrder(r types.AddOrderRequest) (types.Response, erro
 		return nil, err
 	}
 	order := gm.NewOrder(r.OrderNumber, customer.ID, accrual.StatusNew, 0, time.Now())
-	err = gm.AppendNewOrder(
-		r.GetCtx(),
-		customer,
-		order,
-	)
-
-	if errAcc := gm.calcAccrualForOrder(r, customer, order); errAcc != nil {
-		gm.logger.Warn(errAcc.Error())
-	}
-
+	err = gm.AppendNewOrder(r.GetCtx(), customer, order)
+	gm.scheduler.Push(order)
 	return nil, err
-}
-
-func (gm *GopherMartApp) calcAccrualForOrder(r types.AddOrderRequest, customer *Customer, order *types.Order) error {
-	gm.logger.Infof("calculate accrual order %s", r.OrderNumber)
-	w, err := gm.Accrual.Calc(r.GetCtx(), r.OrderNumber)
-	if err != nil {
-		msg := fmt.Sprintf("accrual order %s has rejected by %s", r.OrderNumber, err.Error())
-		return errors.New(msg)
-	}
-	gm.logger.Infof("Accrual order status %s and balance %.02f", w.Status, w.Accrual)
-	tx, err := gm.Storage.Begin(r.GetCtx())
-	if err != nil {
-		msg := fmt.Sprintf("error begin transaction: %s", err.Error())
-		return errors.New(msg)
-	}
-	defer func() {
-		if err != nil {
-			if errTx := tx.Rollback(); errTx != nil {
-				gm.logger.Errorf("error rolling back transaction: %s", errTx.Error())
-			}
-		}
-	}()
-	if err = gm.UpdateOrderStatusAccrual(r.GetCtx(), order, w.Status, w.Accrual); err != nil {
-		msg := fmt.Sprintf("invalid update status accural for order %s by: %s", r.OrderNumber, err.Error())
-		return errors.New(msg)
-	}
-	newBalance, err := gm.UpdateCustomerBalance(r.GetCtx(), customer, w.Accrual)
-	if err != nil {
-		msg := fmt.Sprintf("error update customer balance: %s", err.Error())
-		return errors.New(msg)
-	}
-	gm.logger.Infof("customer %s(%d) new balance balance: %.02f", customer.Login, customer.ID, newBalance)
-	err = tx.Commit()
-	if err != nil {
-		gm.logger.Errorf("error committing withdraw: %s", err.Error())
-	}
-	return nil
 }
 
 func isValidOrderNumber(num string) bool {
