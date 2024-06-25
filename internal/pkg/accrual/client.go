@@ -62,11 +62,9 @@ func (acc *AccrualClient) Calc(ctx context.Context, number string) (*ResponseOrd
 	client := http.Client{}
 	w, err := client.Do(r)
 	if err != nil {
-		acc.logger.Error(err.Error())
 		return nil, err
 	}
 	err = checkCalcResponse(w)
-	defer w.Body.Close()
 	if errors.Is(err, ErrTooManyRequests) {
 		if tm, errTm := getTimeout(w); err != nil {
 			return nil, errTm
@@ -75,14 +73,13 @@ func (acc *AccrualClient) Calc(ctx context.Context, number string) (*ResponseOrd
 		}
 	}
 	if err != nil {
-		acc.logger.Warn("accrual client has error: " + err.Error())
 		return nil, err
 	}
 	data := ResponseOrders{}
 	if err := json.NewDecoder(w.Body).Decode(&data); err != nil {
-		acc.logger.Error(err.Error())
 		return nil, err
 	}
+	defer w.Body.Close()
 	return &data, nil
 }
 

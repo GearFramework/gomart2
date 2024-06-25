@@ -37,12 +37,12 @@ var (
 	`
 )
 
-func (gm *GopherMartApp) NewOrder(number string, customerID int64, status accrual.StatusAccrual, accrual float32, uploadedAt time.Time) *types.Order {
+func (gm *GopherMartApp) NewOrder(number string, customerID int64, status accrual.StatusAccrual, accrual float32, uploadedAt time.Time) types.Order {
 	loc, err := time.LoadLocation("Europe/Moscow")
 	if err != nil {
 		gm.logger.Error(err)
 	}
-	return &types.Order{
+	return types.Order{
 		Number:     number,
 		CustomerID: customerID,
 		Accrual:    accrual,
@@ -51,7 +51,7 @@ func (gm *GopherMartApp) NewOrder(number string, customerID int64, status accrua
 	}
 }
 
-func (gm *GopherMartApp) AppendNewOrder(ctx context.Context, customer *Customer, order *types.Order) error {
+func (gm *GopherMartApp) AppendNewOrder(ctx context.Context, customer *Customer, order types.Order) error {
 	gm.logger.Infof("store new order %s", order.Number)
 	if err := gm.InsertOrder(ctx, order); err != nil {
 		gm.logger.Errorf("error inserting order: %s", err.Error())
@@ -60,7 +60,7 @@ func (gm *GopherMartApp) AppendNewOrder(ctx context.Context, customer *Customer,
 	return nil
 }
 
-func (gm *GopherMartApp) InsertOrder(ctx context.Context, order *types.Order) error {
+func (gm *GopherMartApp) InsertOrder(ctx context.Context, order types.Order) error {
 	if _, err := gm.Storage.Insert(ctx, sqlInsertOrder, order.Number, order.CustomerID, order.Accrual); err != nil {
 		return err
 	}
@@ -77,13 +77,13 @@ func (gm *GopherMartApp) UpdateOrderStatusAccrual(
 	return err
 }
 
-func (gm *GopherMartApp) GetOrder(ctx context.Context, number string) (*types.Order, error) {
+func (gm *GopherMartApp) GetOrder(ctx context.Context, number string) (types.Order, error) {
 	var order types.Order
 	if err := gm.Storage.Get(ctx, &order, sqlGetOrderByID, number); err != nil {
 		gm.logger.Warnf("Order possible not found for number: %s", number)
-		return nil, err
+		return order, err
 	}
-	return &order, nil
+	return order, nil
 }
 
 func (gm *GopherMartApp) CheckExistsOrder(ctx context.Context, number string, customer *Customer) error {
@@ -114,7 +114,7 @@ func (gm *GopherMartApp) GetCustomerOrders(ctx context.Context, customerID int64
 			gm.logger.Error(err.Error())
 			return nil, err
 		}
-		orders = append(orders, *gm.NewOrder(
+		orders = append(orders, gm.NewOrder(
 			number,
 			customerID,
 			status,

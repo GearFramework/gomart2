@@ -9,16 +9,13 @@ import (
 )
 
 func (gm *GopherMartApp) calc(ctx context.Context, order any) error {
-	gm.logger.Infof("calculate accrual order %s", order.(types.Order).Number)
 	w, err := gm.Accrual.Calc(ctx, order.(types.Order).Number)
 	if err != nil {
-		gm.logger.Errorf("accrual order %s has rejected by %s", order.(types.Order).Number, err.Error())
 		if errors.Is(err, accrual.ErrTooManyRequests) {
 			gm.scheduler.Pause(w.Timeout)
 		}
 		return err
 	}
-	gm.logger.Infof("Accrual order status %s and balance %.02f", w.Status, w.Accrual)
 	tx, err := gm.Storage.Begin(ctx)
 	if err != nil {
 		msg := fmt.Sprintf("error begin transaction: %s", err.Error())
@@ -52,6 +49,7 @@ func (gm *GopherMartApp) calc(ctx context.Context, order any) error {
 	err = tx.Commit()
 	if err != nil {
 		gm.logger.Errorf("error committing withdraw: %s", err.Error())
+		return err
 	}
 	return nil
 }

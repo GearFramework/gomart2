@@ -81,15 +81,11 @@ func (q *Query) Pop() (any, error) {
 	if q.IsEmpty() {
 		return nil, ErrEmptyQuery
 	}
-	l := len(q.packets)
-	order := q.packets[l-1]
-	_ = copy(q.packets, q.packets[:l-1])
+	order := q.packets[0]
+	q.packets = q.packets[1:]
 	return order, nil
 }
 
 func (q *Query) IsEmpty() bool {
-	if len(q.packets) == 0 {
-		return true
-	}
-	return false
+	return len(q.packets) == 0
 }
