@@ -35,7 +35,6 @@ func (gm *GopherMartApp) calc(ctx context.Context, order any) error {
 		)
 		return errors.New(msg)
 	}
-	var newBalance float32
 	if w.Status == accrual.StatusInvalid {
 		gm.logger.Warnf("order %s was rejected by accrual", order.(types.Order).Number)
 		return nil
@@ -44,6 +43,7 @@ func (gm *GopherMartApp) calc(ctx context.Context, order any) error {
 		gm.logger.Warn(accrual.ErrNotProcessed)
 		return accrual.ErrNotProcessed
 	}
+	var newBalance float32
 	newBalance, err = gm.UpdateCustomerBalance(ctx, order.(types.Order).CustomerID, w.Accrual)
 	if err != nil {
 		msg := fmt.Sprintf("error update customer balance: %s", err.Error())
